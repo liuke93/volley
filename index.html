@@ -66,7 +66,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .mini-btn{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:999px;padding:4px 10px;font-size:.8rem}
 
 /* Giocatori */
-.players{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:8px}
+.players{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-bottom:8px}
 .pl{background:var(--surface);border:2px solid var(--line);border-radius:var(--radius-sm);padding:6px 2px 5px;text-align:center;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
 .pl .n{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:1.35rem;line-height:1}
 .pl .nm{font-size:.68rem;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
@@ -548,14 +548,17 @@ function renderRoster(){
   r.innerHTML='<span class="hd">N.</span><span class="hd">Nome</span><span class="hd">Ruolo</span>';
   M.roster.forEach((p,i)=>{
     const n=document.createElement("input"); n.type="text"; n.inputMode="numeric"; n.value=p.num; n.setAttribute("aria-label","Numero giocatore "+(i+1));
-    n.onchange=()=>{p.num=n.value.trim();save();renderAll(true);};
+    n.onchange=()=>{p.num=n.value.trim();save();renderAll(true);renderLineup();};
     const nm=document.createElement("input"); nm.type="text"; nm.value=p.name; nm.placeholder="Nome"; nm.setAttribute("aria-label","Nome giocatore "+(i+1));
-    nm.onchange=()=>{p.name=nm.value.trim();save();renderAll(true);};
+    nm.onchange=()=>{p.name=nm.value.trim();save();renderAll(true);renderLineup();};
     const ro=document.createElement("select"); ro.setAttribute("aria-label","Ruolo giocatore "+(i+1));
     ["","P","S","C","O","L"].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v||"–";if(p.role===v)o.selected=true;ro.appendChild(o);});
     ro.onchange=()=>{p.role=ro.value;save();};
     r.append(n,nm,ro);
   });
+  renderLineup();
+}
+function renderLineup(){
   const lu=$("lineup"); lu.innerHTML="";
   // disposizione come in campo: Z4 Z3 Z2 / Z5 Z6 Z1
   [3,2,1,4,5,0].forEach(z=>{
