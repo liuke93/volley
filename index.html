@@ -62,7 +62,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .sets-mid .sw{font-size:1.6rem;font-weight:700}
 .sets-mid small{font-family:"Barlow",sans-serif;font-size:.72rem;opacity:.85}
 .board-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:.85rem;gap:8px;flex-wrap:wrap}
-.rot-chip{background:var(--yellow);color:var(--yellow-ink);font-weight:700;border-radius:999px;padding:3px 10px;font-family:"Barlow Condensed",sans-serif;font-size:1rem}
+.rot-chip{border:none;cursor:pointer;background:var(--yellow);color:var(--yellow-ink);font-weight:700;border-radius:999px;padding:3px 10px;font-family:"Barlow Condensed",sans-serif;font-size:1rem}
 .mini-btn{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:999px;padding:4px 10px;font-size:.8rem}
 
 /* Giocatori */
@@ -75,6 +75,14 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .pl.server{box-shadow:inset 0 -4px 0 var(--yellow)}
 .pl.libero{border-style:dashed}
 .pl.empty{opacity:.4}
+.rot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0}
+.rot-grid button{border:2px solid var(--line);background:var(--surface-2);border-radius:var(--radius-sm);padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.rot-grid button b{font-family:"Barlow Condensed",sans-serif;font-size:1.3rem;line-height:1}
+.rot-grid button span{font-size:.72rem;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rot-grid button.on{border-color:var(--blue);background:var(--blue);color:#fff}
+.rot-grid button.on span{color:rgba(255,255,255,.85)}
+.step-row{display:flex;gap:8px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 
 /* Griglia */
 .grid-wrap{background:var(--surface);border-radius:var(--radius-lg);padding:8px 6px 10px;border:1px solid var(--line)}
@@ -189,7 +197,7 @@ dialog .row-actions{margin-bottom:0}
         </div>
       </div>
       <div class="board-bottom">
-        <span>Rotazione <span class="rot-chip" id="rotChip">R1</span> &nbsp;In battuta: <b id="serverName">–</b></span>
+        <span>Rotazione <button class="rot-chip" id="rotChip" aria-label="Cambia rotazione">R1</button> &nbsp;In battuta: <b id="serverName">–</b></span>
         <button class="mini-btn" id="endSetBtn">Chiudi set</button>
       </div>
     </div>
@@ -224,7 +232,7 @@ dialog .row-actions{margin-bottom:0}
     <div class="tbl-wrap"><table id="tTeam"></table></div>
 
     <h3>Rotazioni</h3>
-    <p class="hint">Side-out: punti vinti quando battono loro. Break: punti vinti quando battiamo noi.</p>
+    <p class="hint" id="rotHint">Side-out: punti vinti quando battono loro. Break: punti vinti quando battiamo noi.</p>
     <div class="tbl-wrap"><table id="tRot"></table></div>
 
     <h3>Giocatori</h3>
@@ -255,9 +263,9 @@ dialog .row-actions{margin-bottom:0}
 
     <div class="card">
       <h3 style="margin-top:0">Formazione in campo</h3>
-      <p class="hint">Posizioni di partenza in zona 1–6 (Z1 è chi batte per primo). Le rotazioni R1–R6 si contano da qui. Un cambio sostituisce il giocatore nella sua posizione.</p>
+      <p class="hint">Posizioni di partenza in zona 1–6 (Z1 è chi batte per primo). Un cambio sostituisce il giocatore nella sua posizione. Se indichi il palleggiatore, le rotazioni si chiamano P1–P6 dalla zona in cui si trova (P1 = palleggiatore in zona 1) e restano confrontabili tra set e partite.</p>
       <div class="lineup" id="lineup"></div>
-      <div class="field" style="margin-top:8px"><label for="liberoSel">Libero</label><select id="liberoSel"></select></div>
+      <div class="three" style="margin-top:8px"><div class="field"><label for="setterSel">Palleggiatore</label><select id="setterSel"></select></div><div class="field"><label for="liberoSel1">Libero 1</label><select id="liberoSel1"></select></div><div class="field"><label for="liberoSel2">Libero 2</label><select id="liberoSel2"></select></div></div>
     </div>
 
     <div class="card">
@@ -280,6 +288,12 @@ dialog .row-actions{margin-bottom:0}
       <p class="hint" style="margin-top:0">I dati si salvano da soli su questo dispositivo a ogni tocco.</p>
       <button class="btn primary" id="newMatchBtn" style="width:100%">Nuova partita</button>
     </div>
+    <div class="card">
+      <h3 style="margin-top:0">Trasferire una partita</h3>
+      <p class="hint">Per spostare una partita su un altro telefono o sul PC: esportala in un file, mandalo (email, WhatsApp, Drive) e importalo dall'altro dispositivo. Il file contiene anche rosa, formazione e numeri avversari.</p>
+      <div class="row-actions" style="margin:0"><button class="btn" id="exportMatchBtn">Esporta partita in corso</button><button class="btn" id="importMatchBtn">Importa partita</button></div>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
     <div class="card"><div id="matchList"></div></div>
   </section>
 </div>
@@ -294,8 +308,9 @@ dialog .row-actions{margin-bottom:0}
 <div class="toast" id="toast"></div>
 
 <dialog id="dlgLegend"><h3>Legenda simboli</h3><div id="legendBody"></div><div class="row-actions"><button class="btn primary" data-close>Chiudi</button></div></dialog>
-<dialog id="dlgServe"><h3 id="serveTitle">Chi batte?</h3><p class="hint" id="serveHint">Scegli chi batte per primo in questo set.</p><div class="row-actions"><button class="btn primary" id="serveUs">Noi</button><button class="btn" id="serveThem">Loro</button></div></dialog>
+<dialog id="dlgServe"><h3 id="serveTitle">Chi batte?</h3><p class="hint" id="serveHint">Scegli chi batte per primo in questo set. Per partire da un'altra rotazione tocca l'indicatore giallo della rotazione sul tabellone.</p><div class="row-actions"><button class="btn primary" id="serveUs">Noi</button><button class="btn" id="serveThem">Loro</button></div></dialog>
 <dialog id="dlgOpp"><h3>Numero avversario</h3><input type="text" inputmode="numeric" id="dlgOppIn" placeholder="es. 7" aria-label="Numero giocatore avversario"><div class="row-actions"><button class="btn" data-close>Annulla</button><button class="btn primary" id="dlgOppOk">Aggiungi</button></div></dialog>
+<dialog id="dlgRot"><h3>Rotazione</h3><p class="hint" id="rotDlgHint"></p><div class="rot-grid" id="rotGrid"></div><div class="step-row"><button class="btn" id="rotBack">Indietro di una</button><button class="btn" id="rotFwd">Avanti di una</button></div><div class="row-actions"><button class="btn primary" data-close>Chiudi</button></div></dialog>
 <dialog id="dlgConfirm"><h3 id="cfTitle"></h3><p class="hint" id="cfText"></p><div class="row-actions"><button class="btn" data-close>Annulla</button><button class="btn primary" id="cfOk">Conferma</button></div></dialog>
 
 <script>
@@ -329,7 +344,7 @@ function newMatch(prev){
   return {
     id:"m"+Date.now(), created:new Date().toISOString(),
     us:prev?prev.us:"Noi", them:"Avversari",
-    roster, lineup:prev?prev.lineup.slice():[0,1,2,3,4,5], libero:prev?prev.libero:-1,
+    roster, lineup:prev?prev.lineup.slice():[0,1,2,3,4,5], liberi:prev?prev.liberi.slice():[-1,-1], setter:prev?prev.setter:-1,
     setNum:1, sets:[{us:0,them:0}], setStarted:false,
     serving:"us", rot:0, events:[], selected:prev?prev.lineup[0]:0, auto:true, opp:[], oppSel:-1
   };
@@ -343,7 +358,13 @@ function load(){
 function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(store));}catch(e){}}
 load();
 let M=store.current;
-if(!Array.isArray(M.opp)) M.opp=[]; if(M.oppSel==null) M.oppSel=-1;
+function normalize(m){
+  if(!Array.isArray(m.opp)) m.opp=[]; if(m.oppSel==null) m.oppSel=-1;
+  if(!Array.isArray(m.liberi)) m.liberi=[(m.libero!=null?m.libero:-1),-1];
+  delete m.libero; if(m.setter==null) m.setter=-1;
+  return m;
+}
+normalize(M); store.archive.forEach(normalize);
 
 /* ---------- Utility ---------- */
 const $=id=>document.getElementById(id);
@@ -351,6 +372,10 @@ function pLabel(i){const p=M.roster[i]; if(!p) return "–"; return "#"+(p.num||
 function pName(i){const p=M.roster[i]; return p? (p.name||"") : "";}
 function pFull(i){const n=pName(i); return pLabel(i)+(n?" "+n:"");}
 function curSet(){return M.sets[M.setNum-1];}
+function setterZone(rot){ if(M.setter==null||M.setter<0) return null; const i=M.lineup.indexOf(M.setter); if(i<0) return null; return ((i-rot)%6+6)%6+1; }
+function rotLabel(rot){ if(rot==null) rot=M.rot; const z=setterZone(rot); return z?("P"+z):("R"+(rot+1)); }
+function evRotLabel(e){ const pz=e.point?e.point.pz:e.pz; return pz?("P"+pz):(e.rot!=null?"R"+(e.rot+1):""); }
+function isLibero(i){ return M.liberi.includes(i)&&i>=0; }
 function serverIdx(){return M.lineup[M.rot%6];}
 function toast(t){const el=$("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("on"),1600);}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -361,10 +386,10 @@ function now(){return new Date().toTimeString().slice(0,5);}
 /* ---------- Punteggio ---------- */
 function applyPoint(winner){
   const s=curSet();
-  const servedBy=M.serving, rot=M.rot;
+  const servedBy=M.serving, rot=M.rot, pz=setterZone(M.rot);
   if(winner==="us"){ s.us++; if(M.serving==="them"){ M.rot=(M.rot+1)%6; M.serving="us"; } }
   else { s.them++; M.serving="them"; }
-  return {winner,servedBy,rot};
+  return {winner,servedBy,rot,pz};
 }
 function ensureSetStarted(then){
   if(M.setStarted){then();return;}
@@ -383,7 +408,7 @@ function addTouch(f,q,btn){
   if(M.selected==null||M.selected<0){toast("Seleziona prima un giocatore");return;}
   ensureSetStarted(()=>{
     const before=snap();
-    const ev={t:"touch",p:M.selected,f,q,set:M.setNum,rot:M.rot,serving:M.serving,time:now(),snap:before};
+    const ev={t:"touch",p:M.selected,f,q,set:M.setNum,rot:M.rot,pz:setterZone(M.rot),serving:M.serving,time:now(),snap:before};
     const w=M.auto?pointFor(f,q):null;
     if(w){ ev.point=applyPoint(w); }
     M.events.push(ev); save(); renderAll();
@@ -402,7 +427,7 @@ function addOppNum(raw){
 function addOppRec(q,btn){
   if(M.oppSel==null||M.oppSel<0){toast("Seleziona il numero dell'avversario");return;}
   ensureSetStarted(()=>{
-    M.events.push({t:"opprec",o:M.oppSel,q,set:M.setNum,rot:M.rot,serving:M.serving,time:now(),snap:snap()});
+    M.events.push({t:"opprec",o:M.oppSel,q,set:M.setNum,rot:M.rot,pz:setterZone(M.rot),serving:M.serving,time:now(),snap:snap()});
     save(); renderAll();
     if(btn){btn.classList.remove("flash");void btn.offsetWidth;btn.classList.add("flash");}
     if(navigator.vibrate) navigator.vibrate(25);
@@ -446,7 +471,7 @@ function undo(){
   const ev=M.events.pop();
   if(!ev){toast("Niente da annullare");return;}
   if(ev.snap) restore(ev.snap);
-  if(ev.t==="sub"){ const z=M.lineup.indexOf(ev.in); if(z>=0) M.lineup[z]=ev.out; if(M.selected===ev.in) M.selected=ev.out; }
+  if(ev.t==="sub"){ const z=M.lineup.indexOf(ev.in); if(z>=0) M.lineup[z]=ev.out; if(M.selected===ev.in) M.selected=ev.out; if(ev.setterWas!=null) M.setter=ev.setterWas; }
   save(); renderAll(); toast("Annullato: "+describe(ev));
 }
 function describe(ev){
@@ -454,12 +479,13 @@ function describe(ev){
   if(ev.t==="point") return "Punto "+(ev.point.winner==="us"?M.us:M.them);
   if(ev.t==="sub") return "Cambio "+pLabel(ev.out)+" → "+pLabel(ev.in);
   if(ev.t==="endset") return "Chiusura set "+ev.set;
+  if(ev.t==="rot") return "Rotazione impostata su "+ev.label;
   if(ev.t==="opprec") return "Avv. "+oLabel(ev.o)+" ricezione "+ev.q;
   return "";
 }
 function endSet(){
   const s=curSet();
-  confirmBox("Chiudere il set "+M.setNum+"?", "Punteggio "+s.us+"–"+s.them+". Il set successivo riparte da R1 con la formazione impostata in Rosa.",()=>{
+  confirmBox("Chiudere il set "+M.setNum+"?", "Punteggio "+s.us+"–"+s.them+". Il set successivo riparte dalla formazione impostata in Rosa; per partire da un'altra rotazione tocca l'indicatore giallo sul tabellone.",()=>{
     const before=snap();
     M.events.push({t:"endset",set:M.setNum,time:now(),snap:before});
     M.setNum++; M.sets.push({us:0,them:0}); M.rot=0; M.setStarted=false;
@@ -485,7 +511,7 @@ function renderBoard(){
   const [a,b]=setsWon(); $("setsWon").textContent=a+" – "+b;
   $("dotUs").classList.toggle("on",M.setStarted&&M.serving==="us");
   $("dotThem").classList.toggle("on",M.setStarted&&M.serving==="them");
-  $("rotChip").textContent="R"+(M.rot+1);
+  $("rotChip").textContent=rotLabel();
   $("serverName").textContent=!M.setStarted?"da scegliere":(M.serving==="us"?pFull(serverIdx()):(M.them||"Avversari"));
   const prev=M.sets.slice(0,M.setNum-1).map(x=>x.us+"-"+x.them).join("  ");
   $("bMatch").textContent=prev?("Parziali: "+prev):"";
@@ -497,17 +523,21 @@ function renderPlayers(){
     const b=document.createElement("button"); b.className="pl";
     if(idx===M.selected) b.classList.add("active");
     if(k===0 && M.setStarted && M.serving==="us") b.classList.add("server");
-    b.innerHTML='<span class="n">'+esc(pLabel(idx))+'</span><span class="nm">Z'+(k+1)+(pName(idx)?" "+esc(pName(idx)):"")+'</span>';
+    b.innerHTML='<span class="n">'+esc(pLabel(idx))+'</span><span class="nm">'+esc(pName(idx)||"\u00a0")+'</span>';
     b.onclick=()=>{M.selected=idx;save();renderPlayers();};
     box.appendChild(b);
   });
-  const lb=document.createElement("button"); lb.className="pl libero";
-  if(M.libero>=0){
-    if(M.libero===M.selected) lb.classList.add("active");
-    lb.innerHTML='<span class="n">'+esc(pLabel(M.libero))+'</span><span class="nm">Libero</span>';
-    lb.onclick=()=>{M.selected=M.libero;save();renderPlayers();};
-  } else { lb.classList.add("empty"); lb.innerHTML='<span class="n">L</span><span class="nm">nessuno</span>'; lb.onclick=()=>showView("roster"); }
-  box.appendChild(lb);
+  const libs=M.liberi.filter(i=>i>=0);
+  libs.forEach(li=>{
+    const lb=document.createElement("button"); lb.className="pl libero";
+    if(li===M.selected) lb.classList.add("active");
+    lb.innerHTML='<span class="n">'+esc(pLabel(li))+'</span><span class="nm">'+esc(pName(li)||"Libero")+'</span>';
+    lb.setAttribute("aria-label","Libero "+pFull(li));
+    lb.onclick=()=>{M.selected=li;save();renderPlayers();};
+    box.appendChild(lb);
+  });
+  if(!libs.length){ const lb=document.createElement("button"); lb.className="pl libero empty"; lb.innerHTML='<span class="n">L</span><span class="nm">nessuno</span>'; lb.onclick=()=>showView("roster"); box.appendChild(lb); }
+  box.style.gridTemplateColumns="repeat("+(6+Math.max(1,libs.length))+",minmax(0,1fr))";
 }
 function renderGrid(){
   const h=$("gridHead"); h.innerHTML=FUND.map(f=>"<div>"+f+"</div>").join("");
@@ -569,21 +599,44 @@ function renderLineup(){
     s.onchange=()=>setSlot(z,parseInt(s.value,10));
     d.appendChild(s); lu.appendChild(d);
   });
-  const lsel=$("liberoSel"); lsel.innerHTML=rosterOptions(M.libero,true);
-  lsel.onchange=()=>{const v=parseInt(lsel.value,10); if(v>=0&&M.lineup.includes(v)){toast("È già in formazione");lsel.value=M.libero;return;} M.libero=v; if(M.selected===-1)M.selected=M.lineup[0]; save(); renderAll(true);};
+  const ss=$("setterSel"); let so='<option value="-1">— non indicato —</option>';
+  M.lineup.forEach(i=>{so+='<option value="'+i+'"'+(i===M.setter?" selected":"")+'>'+esc(pFull(i))+'</option>';});
+  ss.innerHTML=so;
+  ss.onchange=()=>{M.setter=parseInt(ss.value,10); save(); renderAll(true); toast(M.setter>=0?"Rotazioni numerate P1–P6":"Rotazioni numerate R1–R6");};
+  [0,1].forEach(k=>{
+    const ls=$("liberoSel"+(k+1)); ls.innerHTML=rosterOptions(M.liberi[k],true);
+    ls.onchange=()=>{const v=parseInt(ls.value,10);
+      if(v>=0&&M.lineup.includes(v)){toast("È già in formazione");ls.value=M.liberi[k];return;}
+      if(v>=0&&M.liberi[1-k]===v){toast("È già l'altro libero");ls.value=M.liberi[k];return;}
+      if(M.selected===M.liberi[k]) M.selected=M.lineup[0];
+      M.liberi[k]=v; save(); renderAll(true);};
+  });
 }
 function setSlot(z,idx){
   const old=M.lineup[z]; if(old===idx) return;
   const other=M.lineup.indexOf(idx);
-  if(idx===M.libero){toast("È impostato come libero");renderRoster();return;}
+  if(isLibero(idx)){toast("È impostato come libero");renderLineup();return;}
   if(other>=0){ M.lineup[other]=old; } // scambio posizioni
   M.lineup[z]=idx;
-  if(M.events.length && other<0){ M.events.push({t:"sub",out:old,in:idx,set:M.setNum,time:now(),snap:snap()}); toast("Cambio: "+pLabel(old)+" esce, "+pLabel(idx)+" entra"); }
+  const setterWas=M.setter;
+  if(other<0 && old===M.setter) M.setter=idx;
+  if(M.events.length && other<0){ M.events.push({t:"sub",out:old,in:idx,set:M.setNum,time:now(),snap:snap(),setterWas}); toast("Cambio: "+pLabel(old)+" esce, "+pLabel(idx)+" entra"); }
   if(M.selected===old && other<0) M.selected=idx;
-  save(); renderAll(true);
+  save(); renderAll(true); renderLineup();
 }
 
 /* ---------- Statistiche ---------- */
+function rotStats(pts){
+  const map={};
+  pts.forEach(e=>{const k=e.point.pz?("P"+e.point.pz):("R"+(e.point.rot+1));
+    const r=map[k]||(map[k]={so:0,soW:0,br:0,brW:0,pu:0,pt:0});
+    if(e.point.servedBy==="them"){r.so++; if(e.point.winner==="us")r.soW++;} else {r.br++; if(e.point.winner==="us")r.brW++;}
+    if(e.point.winner==="us")r.pu++; else r.pt++;});
+  const hasP=Object.keys(map).some(k=>k[0]==="P")||(M.setter>=0&&!pts.length);
+  const order=[]; if(hasP) for(let i=1;i<=6;i++) order.push("P"+i);
+  for(let i=1;i<=6;i++){const k="R"+i; if(!hasP||map[k]) order.push(k);}
+  return order.map(k=>Object.assign({label:k},map[k]||{so:0,soW:0,br:0,brW:0,pu:0,pt:0}));
+}
 let repSet=0, repFund="Attacco";
 function evsFor(setN){return M.events.filter(e=>setN===0||e.set===setN);}
 function count(list){const c={"++":0,"+":0,"!":0,"-":0,"/":0,"=":0,tot:0}; list.forEach(e=>{c[e.q]++;c.tot++;}); return c;}
@@ -623,14 +676,14 @@ function renderReport(){
   $("tTeam").innerHTML=h;
 
   // Rotazioni
-  const rows=[0,1,2,3,4,5].map(r=>({so:0,soW:0,br:0,brW:0,pu:0,pt:0}));
-  pts.forEach(e=>{const r=rows[e.point.rot]; if(e.point.servedBy==="them"){r.so++; if(e.point.winner==="us")r.soW++;} else {r.br++; if(e.point.winner==="us")r.brW++;} if(e.point.winner==="us")r.pu++; else r.pt++;});
-  let rh='<tr><th>Rot.</th><th>In Z1</th><th>Side-out</th><th>%</th><th>Break</th><th>%</th><th>Saldo</th></tr>';
+  const rows=rotStats(pts);
+  $("rotHint").textContent=(rows.some(r=>r.label[0]==="P")?"P1–P6 = zona del palleggiatore. ":"R1–R6 = rotazioni dalla formazione di partenza (indica il palleggiatore in Rosa per usare P1–P6). ")+"Side-out: punti vinti quando battono loro. Break: punti vinti quando battiamo noi.";
+  let rh='<tr><th>Rot.</th><th>Side-out</th><th>%</th><th>Break</th><th>%</th><th>Saldo</th></tr>';
   const T={so:0,soW:0,br:0,brW:0,pu:0,pt:0};
   rows.forEach((r,i)=>{Object.keys(T).forEach(k=>T[k]+=r[k]);
     const bal=r.pu-r.pt;
-    rh+='<tr><td>R'+(i+1)+'</td><td>'+esc(pLabel(M.lineup[i]))+'</td><td>'+r.soW+'/'+r.so+'</td><td class="'+cls(r.soW,r.so,.6,.45)+'">'+pct(r.soW,r.so)+'</td><td>'+r.brW+'/'+r.br+'</td><td class="'+cls(r.brW,r.br,.45,.3)+'">'+pct(r.brW,r.br)+'</td><td class="'+(bal>0?"good":bal<0?"bad":"")+'">'+(bal>0?"+":"")+bal+'</td></tr>';});
-  rh+='<tr class="tot"><td>Totale</td><td></td><td>'+T.soW+'/'+T.so+'</td><td>'+pct(T.soW,T.so)+'</td><td>'+T.brW+'/'+T.br+'</td><td>'+pct(T.brW,T.br)+'</td><td>'+((T.pu-T.pt)>0?"+":"")+(T.pu-T.pt)+'</td></tr>';
+    rh+='<tr><td>'+r.label+'</td><td>'+r.soW+'/'+r.so+'</td><td class="'+cls(r.soW,r.so,.6,.45)+'">'+pct(r.soW,r.so)+'</td><td>'+r.brW+'/'+r.br+'</td><td class="'+cls(r.brW,r.br,.45,.3)+'">'+pct(r.brW,r.br)+'</td><td class="'+(bal>0?"good":bal<0?"bad":"")+'">'+(bal>0?"+":"")+bal+'</td></tr>';});
+  rh+='<tr class="tot"><td>Totale</td><td>'+T.soW+'/'+T.so+'</td><td>'+pct(T.soW,T.so)+'</td><td>'+T.brW+'/'+T.br+'</td><td>'+pct(T.brW,T.br)+'</td><td>'+((T.pu-T.pt)>0?"+":"")+(T.pu-T.pt)+'</td></tr>';
   $("tRot").innerHTML=rh;
 
   // Giocatori
@@ -659,6 +712,46 @@ function renderReport(){
   $("tOpp").innerHTML=oh;
 }
 
+/* ---------- Rotazione manuale ---------- */
+function setRot(r){
+  r=((r%6)+6)%6; if(r===M.rot) return;
+  M.events.push({t:"rot",from:M.rot,to:r,label:rotLabel(r),set:M.setNum,time:now(),snap:snap()});
+  M.rot=r; save(); renderAll(); renderRotDlg();
+}
+function renderRotDlg(){
+  const g=$("rotGrid"); g.innerHTML="";
+  const useP=setterZone(0)!=null;
+  $("rotDlgHint").textContent=useP?"Scegli la zona in cui si trova il palleggiatore. Sotto ogni rotazione c'è chi va in battuta.":"Indica il palleggiatore in Rosa per numerare le rotazioni P1–P6. Sotto ogni rotazione c'è chi va in battuta.";
+  for(let k=0;k<6;k++){
+    let r;
+    if(useP){ const i=M.lineup.indexOf(M.setter); r=((i-k)%6+6)%6; } else r=k;
+    const b=document.createElement("button"); if(r===M.rot) b.classList.add("on");
+    b.innerHTML='<b>'+rotLabel(r)+'</b><span>'+esc(pFull(M.lineup[r]))+'</span>';
+    b.onclick=()=>setRot(r); g.appendChild(b);
+  }
+}
+
+/* ---------- Esporta / Importa ---------- */
+function exportMatch(m){
+  const data=JSON.stringify({app:"scout-volley",version:3,exported:new Date().toISOString(),match:m});
+  const name=("Partita_"+(m.us||"Noi")+"_vs_"+(m.them||"Avversari")+"_"+m.created.slice(0,10)).replace(/[^\w\-]+/g,"_")+".json";
+  offer(name,data);
+}
+function importText(txt){
+  let obj; try{obj=JSON.parse(txt);}catch(e){toast("File non valido: non è un export di Scout Volley");return;}
+  const m=obj&&obj.match;
+  if(!m||!Array.isArray(m.events)||!Array.isArray(m.roster)||!Array.isArray(m.lineup)||!Array.isArray(m.sets)){toast("File non valido: non è un export di Scout Volley");return;}
+  normalize(m);
+  const title=(m.us||"Noi")+" – "+(m.them||"Avversari");
+  const addIt=()=>{ const ai=store.archive.findIndex(x=>x.id===m.id); if(ai>=0) store.archive.splice(ai,1);
+    store.archive.unshift(m); save(); renderMatches(); toast("Importata: "+title+". Aprila dall'elenco"); };
+  if(M.id===m.id){
+    confirmBox("Sostituire la partita in corso?","Il file contiene la stessa partita ("+title+"). Quella in corso verrà sostituita con la versione importata.",()=>{ store.current=M=m; save(); renderAll(); renderMatches(); toast("Partita aggiornata"); });
+  } else if(store.archive.some(x=>x.id===m.id)){
+    confirmBox("Partita già presente","In archivio c'è già "+title+". Vuoi sostituirla con la versione importata?",addIt);
+  } else addIt();
+}
+
 /* ---------- Partite ---------- */
 function matchSummary(m){const won=(()=>{let a=0,b=0;m.sets.forEach((s,i)=>{if(i<m.setNum-1){if(s.us>s.them)a++;else if(s.them>s.us)b++;}});return a+"–"+b;})();
   const d=new Date(m.created); return {title:(m.us||"Noi")+" – "+(m.them||"Avversari"), meta:d.toLocaleDateString("it-IT")+" · set "+won+" · "+m.events.filter(e=>e.t==="touch").length+" tocchi"};}
@@ -670,6 +763,7 @@ function renderMatches(){
     const s=matchSummary(m); const d=document.createElement("div"); d.className="match-item";
     d.innerHTML='<div><div><b>'+esc(s.title)+'</b>'+(cur?' (in corso)':'')+'</div><div class="meta">'+esc(s.meta)+'</div></div>';
     const a=document.createElement("div"); a.className="acts";
+    const ex=document.createElement("button"); ex.textContent="Esporta"; ex.onclick=()=>exportMatch(m); a.appendChild(ex);
     if(!cur){
       const o=document.createElement("button"); o.textContent="Apri"; o.onclick=()=>openArchived(k-1);
       const x=document.createElement("button"); x.textContent="Elimina"; x.onclick=()=>confirmBox("Eliminare la partita?",s.title+". L'operazione non si può annullare.",()=>{store.archive.splice(k-1,1);save();renderMatches();});
@@ -697,7 +791,7 @@ let downloads=null;
 function fileBase(){return ("Scout_"+(M.us||"Noi")+"_vs_"+(M.them||"Avversari")+"_"+M.created.slice(0,10)).replace(/[^\w\-]+/g,"_");}
 async function offer(filename,data){
   if(!downloads){
-    const type=filename.endsWith(".pdf")?"application/pdf":"text/csv";
+    const type=filename.endsWith(".pdf")?"application/pdf":filename.endsWith(".json")?"application/json":"text/csv";
     const blob=data instanceof Blob?data:new Blob([data],{type});
     try{
       const file=new File([blob],filename,{type});
@@ -713,10 +807,10 @@ function buildCSV(){
   const rows=[["Set","Ora","Tipo","Numero","Nome","Fondamentale","Valutazione","Rotazione","Battuta","Punto a"]];
   M.events.forEach(e=>{
     if(e.t==="endset") return;
-    if(e.t==="opprec"){ rows.push([e.set,e.time,"Ricezione avversaria",M.opp[e.o].num,M.them||"Avversari","Ricezione",e.q,"R"+(e.rot+1),e.serving==="us"?"Noi":"Loro",""]); return; }
+    if(e.t==="opprec"){ rows.push([e.set,e.time,"Ricezione avversaria",M.opp[e.o].num,M.them||"Avversari","Ricezione",e.q,evRotLabel(e),e.serving==="us"?"Noi":"Loro",""]); return; }
     rows.push([e.set,e.time,e.t==="touch"?"Tocco":e.t==="point"?"Punto":"Cambio",
       e.t==="touch"?M.roster[e.p].num:e.t==="sub"?M.roster[e.in].num:"", e.t==="touch"?M.roster[e.p].name:e.t==="sub"?("entra per #"+M.roster[e.out].num):"",
-      e.f||"",e.q||"", e.rot!=null?"R"+(e.rot+1):"", e.serving?(e.serving==="us"?"Noi":"Loro"):"", e.point?(e.point.winner==="us"?"Noi":"Loro"):""]);
+      e.f||"",e.q||"", evRotLabel(e), e.serving?(e.serving==="us"?"Noi":"Loro"):"", e.point?(e.point.winner==="us"?"Noi":"Loro"):""]);
   });
   return "\ufeff"+rows.map(r=>r.map(v=>{v=String(v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(";")).join("\n");
 }
@@ -732,9 +826,8 @@ function buildPDF(){
     body:FUND.map(f=>{const c=count(touches.filter(e=>e.f===f));return [f,c.tot,c["++"],c["+"],c["!"],c["-"],c["/"],c["="],pct(c["++"]+c["+"],c.tot)];}),
     theme:"grid",headStyles:{fillColor:blue},styles:{fontSize:8,halign:"center"},columnStyles:{0:{halign:"left",fontStyle:"bold"}},margin:{left:14,right:150}});
   // Rotazioni
-  const pts=M.events.filter(e=>e.point); const rows=[0,1,2,3,4,5].map(()=>({so:0,soW:0,br:0,brW:0}));
-  pts.forEach(e=>{const r=rows[e.point.rot]; if(e.point.servedBy==="them"){r.so++; if(e.point.winner==="us")r.soW++;} else {r.br++; if(e.point.winner==="us")r.brW++;}});
-  doc.autoTable({startY:26,head:[["Rot.","Side-out","%","Break","%"]],body:rows.map((r,i)=>["R"+(i+1),r.soW+"/"+r.so,pct(r.soW,r.so),r.brW+"/"+r.br,pct(r.brW,r.br)]),
+  const pts=M.events.filter(e=>e.point); const rows=rotStats(pts);
+  doc.autoTable({startY:26,head:[["Rot.","Side-out","%","Break","%"]],body:rows.map((r,i)=>[r.label,r.soW+"/"+r.so,pct(r.soW,r.so),r.brW+"/"+r.br,pct(r.brW,r.br)]),
     theme:"grid",headStyles:{fillColor:blue},styles:{fontSize:8,halign:"center"},margin:{left:160,right:14}});
   // Per fondamentale
   let y=doc.lastAutoTable.finalY+8;
@@ -784,6 +877,12 @@ $("ptUs").onclick=()=>addManualPoint("us");
 $("ptThem").onclick=()=>addManualPoint("them");
 $("undoBtn").onclick=undo;
 $("endSetBtn").onclick=endSet;
+$("rotChip").onclick=()=>{renderRotDlg();$("dlgRot").showModal();};
+$("rotBack").onclick=()=>setRot(M.rot-1);
+$("rotFwd").onclick=()=>setRot(M.rot+1);
+$("exportMatchBtn").onclick=()=>exportMatch(M);
+$("importMatchBtn").onclick=()=>{$("importFile").value="";$("importFile").click();};
+$("importFile").onchange=e=>{const f=e.target.files&&e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>importText(String(r.result)); r.onerror=()=>toast("Impossibile leggere il file"); r.readAsText(f);};
 $("autoPt").onchange=e=>{M.auto=e.target.checked;save();};
 $("newMatchBtn").onclick=startNewMatch;
 $("oppAdd").onclick=()=>{ if(addOppNum($("oppNew").value)>=0){ $("oppNew").value=""; renderOppRoster(); renderOpp(); } };
