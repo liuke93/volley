@@ -333,17 +333,18 @@ body.courtmode .undo-btn{right:calc(env(safe-area-inset-right,0px) + 8px);top:ca
 .cu-pt.red{background:#D9463B} .cu-pt.green{background:#1F9D55}
 .cu-pt:disabled{opacity:.3}
 .cu-rot{aspect-ratio:1;border:none;border-radius:50%;background:#37415A;color:#fff;font-size:calc(var(--cu)*3.4);display:flex;align-items:center;justify-content:center}
-.cu-pt:active,.cu-rot:active,.card:active{transform:scale(.94)}
+.cu-pt:active,.cu-rot:active,.cu-lib .card:active{transform:scale(.94)}
 .cu-lib{margin-top:auto;width:100%}
 .cu-lib .card{width:100%;height:calc(var(--cu)*17)}
 .cu-lib small{display:block;text-align:center;color:#9AA7BF;font-size:calc(var(--cu)*2);margin-bottom:calc(var(--cu)*.6)}
 .cu-court{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--court);border:2px solid var(--court-line);border-radius:4px;min-height:0}
-.cu-half{position:relative;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);padding:calc(var(--cu)*1.4);gap:calc(var(--cu)*1.4) calc(var(--cu)*3)}
+.cu-half{position:relative;min-height:0}
 .cu-half.us{border-right:3px solid #fff}
 .cu-half::after{content:"";position:absolute;top:0;bottom:0;border-left:2px dashed var(--court-line)}
 .cu-half.us::after{right:33.3%} .cu-half.them::after{left:33.3%}
-.cu-zone{display:flex;align-items:center;justify-content:center;min-height:0;position:relative;z-index:1}
-.card{position:relative;width:calc(var(--cu)*16);height:calc(var(--cu)*15.5);max-height:100%;border-radius:calc(var(--cu)*1.6);border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--cu)*.6);box-shadow:0 2px 6px rgba(0,0,0,.28);transition:transform .15s}
+.cu-half .card{position:absolute;transform:translate(-50%,-50%);transition:left .45s ease,top .45s ease,box-shadow .2s;z-index:1}
+.cu-half .card:active{transform:translate(-50%,-50%) scale(.94)}
+.card{position:relative;width:calc(var(--cu)*15);height:calc(var(--cu)*14);border-radius:calc(var(--cu)*1.6);border:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--cu)*.6);box-shadow:0 2px 6px rgba(0,0,0,.28);transition:transform .15s}
 .card.us{background:var(--us-c)} .card.them{background:var(--them-c)}
 .card.lib{background:#F2C230;color:#13213B}
 .card.ghost{opacity:.45}
@@ -355,8 +356,6 @@ body.courtmode .undo-btn{right:calc(env(safe-area-inset-right,0px) + 8px);top:ca
 .card.sel{outline:3px solid #fff;outline-offset:2px}
 .card.off{filter:saturate(.55);opacity:.72}
 .card .qb{position:absolute;bottom:calc(var(--cu)*-1.4);right:calc(var(--cu)*-1.2);min-width:calc(var(--cu)*4.6);height:calc(var(--cu)*4.6);border-radius:999px;color:#fff;font-weight:800;font-size:calc(var(--cu)*2.6);display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
-.cu-court.spin .card{animation:cuRot .45s ease}
-@keyframes cuRot{from{transform:scale(.85) rotate(-8deg);opacity:.4}to{transform:none;opacity:1}}
 .cu-bottom{grid-column:1/4;display:flex;justify-content:center;align-items:center;gap:calc(var(--cu)*1.4)}
 .cu-phase{background:#252E43;border-radius:999px;padding:calc(var(--cu)*.8) calc(var(--cu)*2.4);font-size:calc(var(--cu)*2.4);color:#C9D2E3}
 .cu-phase b{color:#fff}
@@ -520,7 +519,7 @@ body.courtmode .act-panel.on{display:flex} body.courtmode .act-scrim.on{display:
 
     <div class="card">
       <h3 style="margin-top:0">Numeri avversari</h3>
-      <p class="hint">Servono per la ricezione avversaria. Si possono aggiungere anche durante la partita dalla schermata Scout.</p>
+      <p class="hint">I numeri 1–7 sono inseriti in automatico (1 palleggiatore, 2 e 5 schiacciatori, 3 e 6 centrali, 4 opposto, 7 libero). Qui puoi aggiungere eventuali riserve.</p>
       <div class="opp-list" id="oppList"></div>
       <div class="add-row"><input type="text" inputmode="numeric" id="oppNew" placeholder="Numero, es. 7" aria-label="Numero giocatore avversario"><button class="btn" id="oppAdd">Aggiungi</button></div>
     </div>
@@ -530,6 +529,7 @@ body.courtmode .act-panel.on{display:flex} body.courtmode .act-scrim.on{display:
       <p class="hint">Tutta la squadra. La formazione si sceglie a inizio set; i cambi si fanno tenendo premuto il giocatore che esce.</p>
       <div class="roster" id="roster"></div>
       <button class="btn" id="addPlayerBtn" style="width:100%;margin-top:10px">+ Aggiungi giocatore</button>
+      <button class="btn primary" id="startMatchBtn" style="width:100%;margin-top:10px" hidden>Avvio partita</button>
     </div>
   </section>
 
@@ -588,12 +588,8 @@ body.courtmode .act-panel.on{display:flex} body.courtmode .act-scrim.on{display:
   <div class="chips" id="fSetter"></div>
   <div class="f-sec">Liberi</div>
   <div class="f-court" id="fLib" style="grid-template-columns:1fr 1fr"></div>
-  <div class="f-sec">Formazione avversaria (tocca una posizione)</div>
-  <div class="f-oline" id="fOppCourt"></div>
-  <div id="fOppPicker"></div>
-  <div class="f-sec">Libero avversario</div>
-  <div class="f-oline" id="fOppLib" style="grid-template-columns:1fr 2fr"></div>
-  <div class="f-sec">Palleggiatore avversario in zona <small class="hint">(solo se non inserisci la formazione)</small></div>
+  <div class="f-sec">Rotazione avversaria di partenza</div>
+  <p class="hint" style="margin:0 0 6px">Avversari automatici: n. 1 palleggiatore, 2 e 5 schiacciatori, 3 e 6 centrali, 4 opposto, 7 libero. Indica in che zona parte il palleggiatore n. 1.</p>
   <div class="chips" id="fOpp"></div>
   <div class="f-sec">Chi batte</div>
   <div class="chips" id="fServe"></div>
@@ -675,6 +671,11 @@ function oNum(i){const o=M.opp[i]; return o?o.num:"–";}
 function curSet(){return M.sets[M.setNum-1];}
 function oppAt(z){ return M.oppLine?M.oppLine[((M.oppRot||0)+z-1)%6]:-1; }
 function oppRole(i){ const o=M.opp[i]; return o&&o.role?o.role:""; }
+const OPP_STD={"1":"P","2":"S","3":"C","4":"O","5":"S","6":"C","7":"L"};
+function ensureStdOpp(){
+  Object.keys(OPP_STD).forEach(n=>{ let i=M.opp.findIndex(o=>o.num===n); if(i<0){ M.opp.push({num:n}); i=M.opp.length-1; } M.opp[i].role=OPP_STD[n]; });
+  return n=>M.opp.findIndex(o=>o.num===n);
+}
 function syncOppZ(){ if(!M.oppLine) return; const i=M.oppLine.findIndex(k=>oppRole(k)==="P"); if(i>=0) M.oppZ=((i-(M.oppRot||0))%6+6)%6+1; }
 function serverIdx(){return M.lineup[M.rot%6];}
 function isLibero(i){return i>=0&&M.liberi.includes(i);}
@@ -815,8 +816,7 @@ function tLabel(id){const p=tPlayer(id); return p?{n:p.num||"?",nm:p.name||""}:{
 function openForm(then){
   if(M.finished){toast("La partita è conclusa");return;}
   formThen=then||null;
-  F={slots:M.lineup.map(idOf),libs:M.liberi.map(idOf),setter:idOf(M.setter),oppZ:M.oppStart,serve:null,pick:null,
-     oline:M.oppLine?M.oppLine.slice():[-1,-1,-1,-1,-1,-1],olib:M.oppLib==null?-1:M.oppLib,opick:null};
+  F={slots:M.lineup.map(idOf),libs:M.liberi.map(idOf),setter:idOf(M.setter),oppZ:M.oppStart||1,serve:null,pick:null};
   if(!F.slots.includes(F.setter)) F.setter=null;
   $("fTitle").textContent="Formazione set "+M.setNum;
   renderForm(); const d=$("dlgForm"); if(!d.open) d.showModal();
@@ -845,53 +845,10 @@ function renderForm(){
   }
   const st=$("fSetter"); st.innerHTML="";
   F.slots.forEach(id=>{ if(!id) return; const L=tLabel(id); const b=document.createElement("button"); b.innerHTML='<b>'+esc(L.n)+'</b>'+esc(L.nm); if(id===F.setter)b.classList.add("on"); b.onclick=()=>{F.setter=id;renderForm();}; st.appendChild(b); });
-  renderOppForm();
   const op=$("fOpp"); op.innerHTML="";
-  [null,1,2,3,4,5,6].forEach(z=>{ const b=document.createElement("button"); b.textContent=z?"P"+z:"Non indicata"; if(F.oppZ===z)b.classList.add("on"); b.onclick=()=>{F.oppZ=z;renderForm();}; op.appendChild(b); });
+  [1,2,3,4,5,6].forEach(z=>{ const b=document.createElement("button"); b.textContent="P"+z; if(F.oppZ===z)b.classList.add("on"); b.onclick=()=>{F.oppZ=z;renderForm();}; op.appendChild(b); });
   const sv=$("fServe"); sv.innerHTML="";
   [["us",M.us||"Noi"],["them",M.them||"Avversari"]].forEach(([k,lab])=>{ const b=document.createElement("button"); b.textContent=lab; if(F.serve===k)b.classList.add("on"); b.onclick=()=>{F.serve=k;renderForm();}; sv.appendChild(b); });
-}
-function renderOppForm(){
-  const c=$("fOppCourt"); c.innerHTML="";
-  [3,2,1,4,5,0].forEach(z=>{ const b=document.createElement("button"); const i=F.oline[z];
-    b.className="f-slot them"+(F.opick&&F.opick.kind==="z"&&F.opick.z===z?" on":"");
-    b.innerHTML='<small>Z'+(z+1)+(i>=0&&oppRole(i)?' · '+esc(oppRole(i)):'')+'</small><b>'+(i>=0?esc(M.opp[i].num):"–")+'</b>';
-    b.onclick=()=>{F.opick={kind:"z",z};renderForm();}; c.appendChild(b); });
-  const l=$("fOppLib"); l.innerHTML="";
-  const lb=document.createElement("button"); lb.className="f-slot lib"+(F.opick&&F.opick.kind==="lib"?" on":"");
-  lb.innerHTML='<small>Libero</small><b>'+(F.olib>=0?esc(M.opp[F.olib].num):"–")+'</b>'; lb.onclick=()=>{F.opick={kind:"lib"};renderForm();};
-  const hint=document.createElement("div"); hint.className="hint"; hint.style.alignSelf="center"; hint.textContent="Indica i ruoli (P palleggiatore, C centrale): servono per rotazione e libero automatico.";
-  l.append(lb,hint);
-  const pk=$("fOppPicker"); pk.innerHTML="";
-  if(!F.opick) return;
-  const cur=F.opick.kind==="z"?F.oline[F.opick.z]:F.olib;
-  const box=document.createElement("div"); box.className="picker";
-  box.innerHTML='<div class="ph"><span>'+(F.opick.kind==="z"?"Avversario in zona "+(F.opick.z+1):"Libero avversario")+'</span><button aria-label="Chiudi">×</button></div>';
-  box.querySelector(".ph button").onclick=()=>{F.opick=null;renderForm();};
-  const ch=document.createElement("div"); ch.className="chips";
-  if(F.opick.kind==="lib"){ const n=document.createElement("button"); n.textContent="Nessuno"; n.onclick=()=>{F.olib=-1;F.opick=null;renderForm();}; ch.appendChild(n); }
-  M.opp.map((o,i)=>({o,i})).sort((a,b)=>(parseInt(a.o.num)||999)-(parseInt(b.o.num)||999)).forEach(({o,i})=>{
-    const b=document.createElement("button"); b.innerHTML='<b>'+esc(o.num)+'</b>'+(o.role?esc(o.role):"");
-    if(F.oline.includes(i)||F.olib===i) b.classList.add("used"); if(i===cur) b.classList.add("on");
-    b.onclick=()=>pickOpp(i); ch.appendChild(b); });
-  const add=document.createElement("div"); add.style.cssText="display:flex;gap:6px;margin-top:8px";
-  add.innerHTML='<input type="text" inputmode="numeric" placeholder="nuovo numero" style="flex:1;min-width:0;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"><button class="btn primary" style="flex:0 0 auto">Aggiungi</button>';
-  const inp=add.querySelector("input"); const go=()=>{ const k=addOppNum(inp.value); if(k>=0) pickOpp(k); };
-  add.querySelector("button").onclick=go; inp.onkeydown=e=>{if(e.key==="Enter")go();};
-  box.append(ch,add);
-  if(cur>=0&&F.opick.kind==="z"){
-    const rc=document.createElement("div"); rc.className="role-chips";
-    rc.innerHTML='<span class="hint" style="align-self:center">Ruolo del '+esc(M.opp[cur].num)+':</span>';
-    ["P","S","C","O"].forEach(r=>{ const b=document.createElement("button"); b.textContent=r; if(oppRole(cur)===r) b.classList.add("on");
-      b.onclick=()=>{ M.opp[cur].role=oppRole(cur)===r?"":r; save(); renderForm(); }; rc.appendChild(b); });
-    box.appendChild(rc);
-  }
-  pk.appendChild(box);
-}
-function pickOpp(i){
-  if(F.opick.kind==="z"){ const z=F.opick.z, other=F.oline.indexOf(i); if(other>=0&&other!==z) F.oline[other]=F.oline[z]; if(F.olib===i) F.olib=-1; F.oline[z]=i; }
-  else { if(F.oline.includes(i)){toast("È già in campo");return;} F.olib=i; if(M.opp[i]) M.opp[i].role="L"; F.opick=null; }
-  save(); renderForm();
 }
 function sortedTeam(){return store.team.slice().sort((a,b)=>(parseInt(a.num)||999)-(parseInt(b.num)||999));}
 function pickFor(id){
@@ -912,9 +869,9 @@ function startSet(){
   const before=snap();
   M.lineup=F.slots.map(teamIdx); M.liberi=F.libs.map(id=>id?teamIdx(id):-1);
   M.setter=F.setter?teamIdx(F.setter):-1; M.oppZ=F.oppZ; M.oppStart=F.oppZ;
-  const fullOpp=F.oline.every(i=>i>=0)&&new Set(F.oline).size===6;
-  M.oppLine=fullOpp?F.oline.slice():null; M.oppRot=0; M.oppLib=F.olib;
-  if(fullOpp){ syncOppZ(); M.oppStart=M.oppZ; }
+  const ix=ensureStdOpp();
+  M.oppLine=["1","2","3","4","5","6"].map(ix); M.oppLib=ix("7");
+  M.oppRot=(6-((F.oppZ||1)-1))%6; syncOppZ(); M.oppStart=M.oppZ;
   M.rot=0; M.serving=F.serve; M.setStarted=true;
   if(F.serve==="us"||!M.lineup.includes(M.selected)) M.selected=F.serve==="us"?serverIdx():M.lineup[0];
   M.events.push({t:"setstart",set:M.setNum,time:now(),snap:before});
@@ -1232,7 +1189,7 @@ function renderMatches(){
       const r=document.createElement("button"); r.textContent="Report"; r.onclick=()=>openReportOf(m); a.appendChild(r);
       const o=document.createElement("button"); o.textContent="Riapri"; o.onclick=()=>openArchived(k-1);
       const x=document.createElement("button"); x.textContent="Elimina"; x.onclick=()=>confirmBox("Eliminare la partita?",s.title+". L'operazione non si può annullare.",()=>{store.archive.splice(k-1,1);save();renderMatches();},"Elimina");
-      a.append(o,x);
+      a.append(o); if(m.finished) a.append(x);
     }
     d.appendChild(a); box.appendChild(d);
   });
@@ -1343,7 +1300,6 @@ function buildPDF(){
 
 /* ---------- Campo (orizzontale) ---------- */
 const COURT_MQ=window.matchMedia("(orientation: landscape)");
-let lastRotKey=null;
 function role(i){ const p=M.roster[i]; return p&&p.role?p.role:""; }
 function usAt(z){ return M.lineup[(M.rot+z-1)%6]; }
 function usShown(z){ // libero automatico al posto del centrale in seconda linea
@@ -1372,19 +1328,59 @@ function longPress(el,fn){ let t=null,long=false;
   el.addEventListener("contextmenu",e=>e.preventDefault());
   return ()=>{ if(long){long=false;return true;} return false; };
 }
-function card(team,info,z){
-  const b=document.createElement("button"); const us=team==="us";
+/* posizioni: x = distanza dalla rete (0 rete, 1 fondo), y = laterale vista dalla squadra (0 sinistra, 1 destra) */
+const ZPOS={1:[.78,.84],2:[.2,.84],3:[.2,.5],4:[.2,.16],5:[.78,.16],6:[.78,.5]};
+const RECV={ // per zona del palleggiatore: zona -> [x,y] (5-1, ricezione a 3)
+  1:{5:[.64,.18],6:[.66,.5],2:[.6,.8],4:[.08,.14],3:[.08,.48],1:[.86,.93]},
+  6:{4:[.6,.18],5:[.66,.42],6:[.44,.62],1:[.66,.84],3:[.08,.62],2:[.08,.88]},
+  5:{3:[.6,.22],6:[.66,.5],1:[.66,.82],4:[.08,.1],5:[.36,.08],2:[.08,.9]},
+  4:{5:[.66,.18],6:[.68,.5],2:[.6,.8],4:[.08,.34],3:[.08,.56],1:[.86,.93]},
+  3:{4:[.6,.18],5:[.66,.44],1:[.66,.82],6:[.86,.62],3:[.08,.55],2:[.08,.86]},
+  2:{3:[.6,.22],6:[.66,.5],1:[.66,.8],4:[.08,.1],5:[.86,.07],2:[.08,.9]}
+};
+function posFor(team,z){
+  const serving=M.serving===team, sz=team==="us"?setterZone(M.rot):(M.oppLine?M.oppZ:null);
+  if(M.setStarted&&!M.finished&&!serving&&sz&&RECV[sz]&&RECV[sz][z]) return RECV[sz][z];
+  if(M.setStarted&&!M.finished&&serving&&z===1) return [.95,.84];
+  return ZPOS[z];
+}
+function place(el,team,xy){
+  const pad=.09, x=pad+xy[0]*(1-2*pad), y=pad+xy[1]*(1-2*pad);
+  if(team==="us"){ el.style.left=((1-x)*100)+"%"; el.style.top=(y*100)+"%"; }
+  else { el.style.left=(x*100)+"%"; el.style.top=((1-y)*100)+"%"; }
+}
+function cardEl(){
+  const b=document.createElement("button");
+  const wasLong=longPress(b,()=>{ const d=b._d; if(!d||d.info.i==null||d.info.i<0) return; if(d.team==="us") openSub(d.info.i,d.info.lib); else openOppSub(d.info); });
+  b.onclick=()=>{ if(wasLong()) return; const d=b._d; if(!d) return;
+    if(d.info.i==null||d.info.i<0){ if(!M.setStarted) openForm(); else toast(d.team==="us"?"Posizione vuota":"Formazione avversaria non disponibile per questo set"); return; }
+    tapCard(d.team,d.info); };
+  return b;
+}
+function fillCard(b,team,info,z){
+  const us=team==="us"; b._d={team,info,z};
   b.className="card "+(info.lib?"lib":team);
-  if(info.i==null||info.i<0){ b.classList.add("ghost"); b.innerHTML='<span class="n">?</span><span class="nm">Z'+z+'</span>'; b.onclick=()=>{ if(!M.setStarted) openForm(); else toast(us?"Posizione vuota":"Formazione avversaria non inserita: la indichi a inizio del prossimo set"); }; return b; }
+  if(info.i==null||info.i<0){ b.classList.add("ghost"); b.innerHTML='<span class="n">?</span><span class="nm">Z'+z+'</span>'; return b; }
   const num=us?pNum(info.i):oNum(info.i), nm=us?pName(info.i):"", rl=us?(info.lib?"L":role(info.i)):(info.lib?"L":oppRole(info.i));
   b.innerHTML=(rl?'<span class="rl">'+esc(rl)+'</span>':'')+'<span class="n">'+esc(num)+'</span><span class="nm">'+esc(nm||"\u00a0")+'</span>';
   if(z===1&&M.setStarted&&!M.finished&&M.serving===team) b.classList.add("srv");
   if(us&&badge&&badge.p===info.i&&Date.now()<badge.until){ const s=document.createElement("span"); s.className="qb"; s.textContent=badge.q; s.style.background=QCOLOR[badge.q]; b.appendChild(s); }
   if(!us&&!oppTappable()) b.classList.add("off");
   b.setAttribute("aria-label",(us?"":"Avversario ")+num+(nm?" "+nm:"")+(z?", zona "+z:""));
-  const wasLong=longPress(b,()=>{ if(us) openSub(info.i,info.lib); else openOppSub(info); });
-  b.onclick=()=>{ if(wasLong()) return; tapCard(team,info); };
   return b;
+}
+function card(team,info,z){ return fillCard(cardEl(),team,info,z); }
+function drawHalf(half,team,getInfo){
+  const keep=new Set();
+  for(let z=1;z<=6;z++){
+    const info=getInfo(z); const key=(info.i==null||info.i<0)?"g"+z:(info.lib?"L":"p")+info.i;
+    keep.add(key);
+    let el=[...half.children].find(c=>c.dataset.k===key);
+    const isNew=!el; if(isNew){ el=cardEl(); el.dataset.k=key; half.appendChild(el); }
+    fillCard(el,team,info,z); el.dataset.k=key;
+    place(el,team,posFor(team,z));
+  }
+  [...half.children].forEach(c=>{ if(!keep.has(c.dataset.k)) c.remove(); });
 }
 function renderCourt(){
   if(!document.body.classList.contains("courtmode")) return;
@@ -1393,16 +1389,12 @@ function renderCourt(){
   $("cuTagUs").textContent=(M.us||"Noi").slice(0,3).toUpperCase(); $("cuTagThem").textContent=(M.them||"Avv").slice(0,3).toUpperCase();
   $("cuTagUs").classList.toggle("srv",M.setStarted&&!M.finished&&M.serving==="us"); $("cuTagThem").classList.toggle("srv",M.setStarted&&!M.finished&&M.serving==="them");
   $("cuEB").disabled=!(M.setStarted&&!M.finished&&M.serving==="them");
-  // noi: colonna sinistra seconda linea (5,6,1), destra prima linea (4,3,2) dall'alto
-  const hu=$("cuHalfUs"), ht=$("cuHalfThem"); hu.innerHTML=""; ht.innerHTML="";
-  [[5,4],[6,3],[1,2]].forEach(([bz,fz])=>{ [bz,fz].forEach(z=>{ const d=document.createElement("div"); d.className="cu-zone"; d.appendChild(card("us",M.setStarted?usShown(z):{i:usAt(z)},z)); hu.appendChild(d); }); });
-  // avversari: colonna sinistra prima linea (2,3,4), destra seconda linea (1,6,5) dall'alto
-  [[2,1],[3,6],[4,5]].forEach(([fz,bz])=>{ [fz,bz].forEach(z=>{ const d=document.createElement("div"); d.className="cu-zone"; d.appendChild(card("them",M.oppLine?themShown(z):{i:-1},z)); ht.appendChild(d); }); });
-  // liberi / panchina
+  drawHalf($("cuHalfUs"),"us",z=>M.setStarted?usShown(z):{i:usAt(z),lib:false});
+  drawHalf($("cuHalfThem"),"them",z=>M.oppLine?themShown(z):{i:-1,lib:false});
   const lu=$("cuLibUs"); lu.innerHTML=""; const lib=M.liberi[0];
   if(lib>=0){ let out=null; for(let z=1;z<=6;z++){ const x=M.setStarted?usShown(z):{lib:false}; if(x.lib) out=x.for; }
     const sm=document.createElement("small"); sm.textContent=out!=null?"Fuori":"Libero"; lu.appendChild(sm);
-    const info=out!=null?{i:out,lib:false}:{i:lib,lib:true}; const c=card("us",info,0); if(out!=null) c.classList.add("off"); lu.appendChild(c); }
+    const c=card("us",out!=null?{i:out,lib:false}:{i:lib,lib:true},0); if(out!=null) c.classList.add("off"); lu.appendChild(c); }
   const lt=$("cuLibThem"); lt.innerHTML="";
   if(M.oppLine&&M.oppLib>=0){ let out=null; for(let z=1;z<=6;z++){ const x=themShown(z); if(x.lib) out=x.for; }
     const sm=document.createElement("small"); sm.textContent=out!=null?"Fuori":"Libero"; lt.appendChild(sm);
@@ -1411,9 +1403,6 @@ function renderCourt(){
   $("cuPhase").innerHTML=!M.setStarted?"Tocca un giocatore per impostare la <b>formazione</b>":M.finished?"Partita conclusa":
     ph==="serve"?"Battiamo noi: tocca il <b>battitore</b>":ph==="receive"?"Battono loro: tocca chi <b>riceve</b>":
     (oppTappable()?"<b>Attacco · Difesa · Muro</b> · tocca un avversario per la sua <b>ricezione</b>":"Scambio in corso: <b>Attacco · Difesa · Muro</b>");
-  const key=M.setNum+"/"+M.rot+"/"+(M.oppRot||0);
-  if(lastRotKey&&lastRotKey!==key){ const c=$("cuCourt"); c.classList.remove("spin"); void c.offsetWidth; c.classList.add("spin"); }
-  lastRotKey=key;
 }
 function tapCard(team,info){
   if(M.finished){toast("Partita conclusa");return;}
@@ -1464,7 +1453,7 @@ function doOppSub(outI,inI,isLib){
 }
 
 /* ---------- Home ---------- */
-let viewing=null; // partita archiviata aperta in sola lettura nel report
+let viewing=null, prep=false; // partita archiviata aperta in sola lettura nel report
 function setScore(m){ const [a,b]=setsWon(m); return a+"–"+b; }
 function closedMatches(){
   const all=[M].concat(store.archive).filter(m=>m&&m.finished);
@@ -1472,7 +1461,7 @@ function closedMatches(){
 }
 function renderHome(){
   $("homeTeam").textContent=(M.us&&M.us!=="Noi")?M.us:"";
-  const can=!M.finished&&(M.events.length>0||M.setStarted||M.them!=="Avversari");
+  const can=!M.finished&&(M.events.length>0||M.setStarted||M.ready||M.them!=="Avversari");
   $("homeResume").disabled=!can;
   if(can){ const s=curSet(); $("homeResumeInfo").textContent=(M.us||"Noi")+" – "+(M.them||"Avversari")+" · set "+setScore(M)+" · "+s.us+"–"+s.them+" nel "+M.setNum+"° set"; }
   else $("homeResumeInfo").textContent="Nessuna partita in corso";
@@ -1491,7 +1480,7 @@ function openReportOf(m){
 }
 function leaveViewing(){ if(viewing){ M=viewing.prev; viewing=null; } }
 function homeNewMatch(){
-  const go=()=>{ if(M.events.length) store.archive.unshift(M); M=newMatch(M,store.team); store.current=M; save(); repSet=0; repRot=""; renderAll(); showView("roster"); toast("Inserisci l'avversario, poi apri Scout dal menu"); };
+  const go=()=>{ if(M.events.length) store.archive.unshift(M); M=newMatch(M,store.team); M.ready=true; store.current=M; ensureStdOpp(); save(); repSet=0; repRot=""; renderAll(); showView("roster",{prep:true}); toast("Inserisci il nome degli avversari, poi Avvio partita"); };
   if(M.events.length&&!M.finished) confirmBox("Iniziare una nuova partita?","La partita in corso non è chiusa: viene salvata in archivio e potrai riaprirla da Tutti i report.",go,"Nuova partita");
   else go();
 }
@@ -1500,7 +1489,9 @@ function homeNewMatch(){
 function openMenu(){ ["mForm","mEndSet","mEndMatch"].forEach(id=>$(id).hidden=curView!=="scout"); $("drawer").classList.add("on"); $("scrim").classList.add("on"); $("drawer").setAttribute("aria-hidden","false"); $("menuBtn").setAttribute("aria-expanded","true"); $("autoPt").checked=M.auto!==false; $("checkRally").checked=M.check!==false; }
 function closeMenu(){ $("drawer").classList.remove("on"); $("scrim").classList.remove("on"); $("drawer").setAttribute("aria-hidden","true"); $("menuBtn").setAttribute("aria-expanded","false"); }
 let curView="home";
-function showView(v){
+function showView(v,opt){
+  prep=v==="roster"&&!!(opt&&opt.prep);
+  $("addPlayerBtn").hidden=prep; $("startMatchBtn").hidden=!prep;
   if(viewing&&v!=="report"){ leaveViewing(); renderAll(); }
   curView=v;
   document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on",s.id==="v-"+v));
@@ -1551,6 +1542,7 @@ $("rotBack").onclick=()=>setRot(M.rot-1);
 $("rotFwd").onclick=()=>setRot(M.rot+1);
 $("newMatchBtn").onclick=startNewMatch;
 $("homeNew").onclick=homeNewMatch;
+$("startMatchBtn").onclick=()=>showView("scout");
 $("cuEB").onclick=()=>addKindPoint("errbat",null);
 $("cuPTus").onclick=()=>addKindPoint("errloro",null);
 $("cuER").onclick=()=>addKindPoint("errnostro",null);
