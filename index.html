@@ -310,8 +310,19 @@ body.courtmode #v-scout > .sc-left,body.courtmode #v-scout > .sc-mid,body.courtm
 body.courtmode .court-ui{display:grid;width:100vw}
 body.courtmode #v-scout.on{display:block!important;padding:0!important;margin:0!important;grid-template-columns:none!important}
 body.courtmode{overflow:hidden}
+body.courtmode .toast{left:27%;right:auto;transform:translateX(-50%);bottom:auto;top:calc(env(safe-area-inset-top,0px) + 18vh)}
 body.courtmode .menu-btn{left:calc(env(safe-area-inset-left,0px) + 8px);right:auto;top:calc(env(safe-area-inset-top,0px) + 6px)}
-body.courtmode .undo-btn{right:calc(env(safe-area-inset-right,0px) + 8px);top:calc(env(safe-area-inset-top,0px) + 6px)}
+body.courtmode .undo-btn{right:calc(env(safe-area-inset-right,0px) + 56px);top:calc(env(safe-area-inset-top,0px) + 6px)}
+body.courtmode .redo-btn{right:calc(env(safe-area-inset-right,0px) + 8px)}
+.redo-btn{top:calc(env(safe-area-inset-top,0px) + 108px)}
+.undo-btn:disabled{opacity:.4}
+.to-dots{display:none}
+body.courtmode .to-dots{display:flex;gap:6px;position:fixed;z-index:30;top:calc(env(safe-area-inset-top,0px) + 17px)}
+body.courtmode .to-dots.us{left:calc(env(safe-area-inset-left,0px) + 58px)}
+body.courtmode .to-dots.them{right:calc(env(safe-area-inset-right,0px) + 106px)}
+.to-dot{width:20px;height:20px;border-radius:50%;border:2px solid #C9D2E3;background:#5B6880;padding:0}
+.to-dot.on{background:#D9463B;border-color:#fff}
+.cu-pt.cu-wide{grid-column:1/3;aspect-ratio:auto;width:100%;height:calc(var(--cu)*6.5);border-radius:999px}
 .court-ui{--cu:min(1vh,0.52vw);--us-c:#1F9D55;--them-c:#2563EB;--court:#E8762E;--court-line:rgba(255,255,255,.85);
   height:100vh;height:100dvh;box-sizing:border-box;padding:calc(var(--cu)*1.6) calc(env(safe-area-inset-right,0px) + var(--cu)*1.6) calc(var(--cu)*1.4) calc(env(safe-area-inset-left,0px) + var(--cu)*1.6);
   grid-template-columns:calc(var(--cu)*21) 1fr calc(var(--cu)*21);grid-template-rows:calc(var(--cu)*13) 1fr calc(var(--cu)*6);gap:calc(var(--cu)*1.2);
@@ -360,15 +371,22 @@ body.courtmode .undo-btn{right:calc(env(safe-area-inset-right,0px) + 8px);top:ca
 .cu-phase{background:#252E43;border-radius:999px;padding:calc(var(--cu)*.8) calc(var(--cu)*2.4);font-size:calc(var(--cu)*2.4);color:#C9D2E3}
 .cu-phase b{color:#fff}
 .act-scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.35)}
-.act-panel{position:fixed;top:0;right:0;bottom:0;z-index:41;width:min(46vw,520px);background:#EEF1F6;color:#13213B;padding:calc(env(safe-area-inset-top,0px) + 10px) calc(env(safe-area-inset-right,0px) + 12px) 10px 12px;box-shadow:-4px 0 18px rgba(0,0,0,.35);flex-direction:column;gap:8px;overflow:auto}
+.act-panel{position:fixed;top:0;right:0;bottom:0;z-index:41;width:min(54vw,560px);background:#EEF1F6;color:#13213B;padding:calc(env(safe-area-inset-top,0px) + 10px) calc(env(safe-area-inset-right,0px) + 12px) 10px 12px;box-shadow:-4px 0 18px rgba(0,0,0,.35);flex-direction:column;gap:8px;overflow:auto}
 body.courtmode .act-panel.on{display:flex} body.courtmode .act-scrim.on{display:block}
 .act-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .act-head b{font-family:"Barlow Condensed",sans-serif;font-size:1.35rem;line-height:1.05}
 .act-head small{display:block;color:#5B6880;font-size:.8rem}
 .act-head button{border:none;background:#DDE3EC;border-radius:50%;width:34px;height:34px;font-size:1.2rem}
-.act-row{display:grid;grid-template-columns:5.5em repeat(6,minmax(0,1fr));gap:6px;align-items:stretch}
-.act-row .lab{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:1.05rem;display:flex;align-items:center}
-.act-row .q{border:none;border-radius:10px;color:#fff;font-weight:800;font-size:1.25rem;min-height:clamp(40px,13vh,64px)}
+.act-panel.one{width:min(32vw,300px)}
+.act-cols{flex:1;display:grid;gap:8px;min-height:0}
+.act-col{display:flex;flex-direction:column;gap:5px;min-height:0}
+.act-col .lab{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:1rem;text-align:center;line-height:1.1}
+.act-col .q{flex:1;min-height:34px;border:none;border-radius:10px;color:#fff;display:flex;align-items:center;gap:8px;padding:0 10px;text-align:left}
+.act-col .q b{font-size:1.3rem;min-width:1.7em;text-align:center;font-weight:800}
+.act-col .q span{font-size:.82rem;font-weight:600;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.act-cols.multi .q{padding:0 6px;gap:5px}
+.act-cols.multi .q b{font-size:1.15rem;min-width:1.5em}
+.act-cols.multi .q span{font-size:.74rem}
 .act-hint{font-size:.78rem;color:#5B6880}
 .f-oline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .f-slot.them{border-color:#2563EB}
@@ -380,6 +398,9 @@ body.courtmode .act-panel.on{display:flex} body.courtmode .act-scrim.on{display:
 <body>
 <button class="menu-btn" id="menuBtn" aria-label="Apri il menu" aria-expanded="false">☰</button>
 <button class="undo-btn" id="undoBtn" aria-label="Annulla l'ultima azione">↶</button>
+<button class="undo-btn redo-btn" id="redoBtn" aria-label="Ripristina l'azione annullata">↷</button>
+<div class="to-dots us" id="toUs" aria-label="Time-out nostri"></div>
+<div class="to-dots them" id="toThem" aria-label="Time-out avversari"></div>
 <div class="app">
 
   <!-- ===== HOME ===== -->
@@ -403,6 +424,7 @@ body.courtmode .act-panel.on{display:flex} body.courtmode .act-scrim.on{display:
             <div class="pt-row">
               <button class="pt-btn" data-kind="errbat" title="Errore in battuta avversario: punto a noi">Err. battuta</button>
               <button class="pt-btn" data-kind="errloro" title="Altro errore avversario: punto a noi">Err. loro</button>
+              <button class="pt-btn" data-kind="murosq" title="Punto a muro di squadra, senza indicare il giocatore">Muro</button>
             </div>
           </div>
           <div class="sets-mid"><span class="sw" id="setsWon">0 – 0</span><small>set vinti</small></div>
@@ -450,6 +472,7 @@ body.courtmode .act-panel.on{display:flex} body.courtmode .act-scrim.on{display:
         <div class="cu-box">
           <button class="cu-pt green" id="cuEB" title="Errore in battuta avversario: punto a noi">EB</button>
           <button class="cu-pt green" id="cuPTus" title="Errore avversario: punto a noi">PT</button>
+          <button class="cu-pt green cu-wide" id="cuMU" title="Punto a muro di squadra">MU</button>
           <button class="cu-rot" id="cuRotUsB" aria-label="Nostra rotazione indietro">↺</button>
           <button class="cu-rot" id="cuRotUsF" aria-label="Nostra rotazione avanti">↻</button>
         </div>
@@ -619,7 +642,8 @@ const KINDS={
   errbat:{w:"us",label:"Errore in battuta avversario",short:"Err. battuta loro"},
   errloro:{w:"us",label:"Errore avversario",short:"Err. loro"},
   errnostro:{w:"them",label:"Errore di squadra",short:"Err. nostro"},
-  puntoloro:{w:"them",label:"Punto diretto avversario",short:"Punto loro"}
+  puntoloro:{w:"them",label:"Punto diretto avversario",short:"Punto loro"},
+  murosq:{w:"us",label:"Punto a muro di squadra",short:"Muro"}
 };
 function pointFor(f,q){
   if(q==="=") return "them";
@@ -689,6 +713,8 @@ function restore(s){M.sets=s.sets;M.setNum=s.setNum;M.serving=s.serving;M.rot=s.
   if(s.lineup)M.lineup=s.lineup; if(s.liberi)M.liberi=s.liberi; if(s.setter!==undefined)M.setter=s.setter; if(s.oppZ!==undefined)M.oppZ=s.oppZ; if(s.oppStart!==undefined)M.oppStart=s.oppStart;
   if(s.oppLine!==undefined)M.oppLine=s.oppLine; if(s.oppRot!=null)M.oppRot=s.oppRot; if(s.oppLib!=null)M.oppLib=s.oppLib;}
 function now(){return new Date().toTimeString().slice(0,5);}
+let REDO=[];
+function evPush(e){ REDO.length=0; M.events.push(e); }
 function vib(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(e){}}
 function closedSets(m){m=m||M; const c=m.sets[m.setNum-1]; return m.setNum-1+((m.finished&&c&&(c.us+c.them)>0)?1:0);}
 function setsWon(m){m=m||M; let a=0,b=0; const n=closedSets(m); m.sets.forEach((s,i)=>{if(i<n){if(s.us>s.them)a++;else if(s.them>s.us)b++;}}); return [a,b];}
@@ -716,7 +742,7 @@ function confirmFx(ev,btn){
 }
 
 /* ---------- Azioni ---------- */
-function pushEvent(ev,btn){ M.events.push(ev); save(); confirmFx(ev,btn); renderAll(); if(ev.point&&M.check!==false) checkRally(ev); }
+function pushEvent(ev,btn){ evPush(ev); save(); confirmFx(ev,btn); renderAll(); if(ev.point&&M.check!==false) checkRally(ev); }
 function checkRally(ev){
   const ts=[]; for(let i=M.events.length-2;i>=0;i--){ const e=M.events[i]; if(e.point||e.t==="setstart"||e.t==="endset") break; if(e.t==="touch") ts.push(e); }
   if(ev.t==="touch") ts.push(ev);
@@ -746,11 +772,32 @@ function addOppRec(q,btn){
   });
 }
 function undo(){
+  const after=snap();
   const ev=M.events.pop();
   if(!ev){toast("Niente da annullare");return;}
+  REDO.push({ev,after});
   if(ev.snap) restore(ev.snap);
   if(ev.t==="sub"&&!(ev.snap&&ev.snap.lineup)){ const z=M.lineup.indexOf(ev.in); if(z>=0) M.lineup[z]=ev.out; if(M.selected===ev.in) M.selected=ev.out; if(ev.setterWas!=null) M.setter=ev.setterWas; }
   badge=null; save(); renderAll(); toast("Annullato: "+describe(ev)); vib(15);
+}
+function toList(team){ return M.events.filter(e=>e.t==="timeout"&&e.team===team&&e.set===M.setNum); }
+function renderTO(){
+  ["us","them"].forEach(team=>{ const box=$(team==="us"?"toUs":"toThem"); if(!box) return; const n=toList(team).length; box.innerHTML="";
+    for(let k=0;k<2;k++){ const b=document.createElement("button"); b.className="to-dot"+(k<n?" on":""); b.setAttribute("aria-label",(team==="us"?"Time-out nostro ":"Time-out avversario ")+(k+1)+(k<n?" chiamato":""));
+      b.onclick=()=>toggleTO(team,k<n); box.appendChild(b); } });
+}
+function toggleTO(team,used){
+  if(!M.setStarted||M.finished){toast("Nessun set in corso");return;}
+  if(used){ const list=toList(team); const last=list[list.length-1]; const i=M.events.lastIndexOf(last); if(i>=0) M.events.splice(i,1); save(); renderAll(); toast("Time-out annullato"); return; }
+  if(toList(team).length>=2){toast("Time-out esauriti");return;}
+  const s=curSet(); evPush({t:"timeout",team,set:M.setNum,score:s.us+"-"+s.them,time:now()}); save(); renderAll();
+  toast((team==="us"?"Time-out nostro":"Time-out avversario")+" sul "+s.us+"-"+s.them); vib(25);
+}
+function redo(){
+  const r=REDO.pop();
+  if(!r){toast("Niente da ripristinare");return;}
+  M.events.push(r.ev); restore(r.after);
+  badge=null; save(); renderAll(); toast("Ripristinato: "+describe(r.ev)); vib(15);
 }
 function describe(ev){
   if(ev.t==="touch") return pFull(ev.p)+" · "+ev.f+" "+ev.q;
@@ -761,6 +808,7 @@ function describe(ev){
   if(ev.t==="opprot") return "Rotazione avversaria: "+(ev.to?"P"+ev.to:"non indicata");
   if(ev.t==="endset") return "Chiusura set "+ev.set;
   if(ev.t==="endmatch") return "Chiusura partita";
+  if(ev.t==="timeout") return (ev.team==="us"?"Time-out nostro":"Time-out avversario")+" sul "+ev.score;
   if(ev.t==="oppsub") return "Cambio avversario: entra "+oNum(ev.in)+", esce "+oNum(ev.out);
   if(ev.t==="rot") return "Rotazione impostata su "+ev.label;
   return "";
@@ -773,7 +821,7 @@ function endSet(){
   if(M.finished){toast("La partita è conclusa");return;}
   const s=curSet();
   confirmBox("Chiudere il set "+M.setNum+"?","Punteggio "+s.us+"–"+s.them+". Il set successivo riparte dalla formazione impostata in Rosa; per partire da un'altra rotazione tocca l'indicatore giallo sul tabellone.",()=>{
-    M.events.push({t:"endset",set:M.setNum,time:now(),snap:snap()});
+    evPush({t:"endset",set:M.setNum,time:now(),snap:snap()});
     M.setNum++; M.sets.push({us:0,them:0}); M.rot=0; M.setStarted=false;
     save(); renderAll();
     showSummary(M.setNum-1,"Formazione set "+M.setNum,()=>openForm());
@@ -784,7 +832,7 @@ function endMatch(){
   const s=curSet(); const partial=(s.us+s.them)>0;
   const [a,b]=(()=>{let x=0,y=0; M.sets.forEach((t,i)=>{ if(i<M.setNum-1||partial){ if(t.us>t.them)x++; else if(t.them>t.us)y++; }}); return [x,y];})();
   confirmBox("Chiudere la partita?",(partial?"Il set in corso ("+s.us+"–"+s.them+") viene conteggiato come ultimo set. ":"")+"Risultato finale "+a+"–"+b+". Potrai annullare la chiusura dalla barra in basso.",()=>{
-    M.events.push({t:"endmatch",set:M.setNum,time:now(),snap:snap()});
+    evPush({t:"endmatch",set:M.setNum,time:now(),snap:snap()});
     M.finished=true; save(); renderAll(); toast("Partita chiusa: "+a+"–"+b);
     if(M.events.some(e=>e.set===M.setNum&&(e.t==="opprec"||(e.t==="touch"&&e.f==="Ricezione")))) showSummary(M.setNum,"Torna alla home",()=>showView("home"));
     else showView("home");
@@ -874,7 +922,7 @@ function startSet(){
   M.oppRot=(6-((F.oppZ||1)-1))%6; syncOppZ(); M.oppStart=M.oppZ;
   M.rot=0; M.serving=F.serve; M.setStarted=true;
   if(F.serve==="us"||!M.lineup.includes(M.selected)) M.selected=F.serve==="us"?serverIdx():M.lineup[0];
-  M.events.push({t:"setstart",set:M.setNum,time:now(),snap:before});
+  evPush({t:"setstart",set:M.setNum,time:now(),snap:before});
   save(); $("dlgForm").close(); renderAll(); toast("Set "+M.setNum+" iniziato");
   const t=formThen; formThen=null; if(t) t();
 }
@@ -897,7 +945,7 @@ function doSub(outIdx,inId,isLib){
   if(isLib){ const k=M.liberi.indexOf(outIdx); if(k<0) return; M.liberi[k]=inIdx; }
   else { const z=M.lineup.indexOf(outIdx); if(z<0) return; M.lineup[z]=inIdx; if(M.setter===outIdx) M.setter=inIdx; }
   if(M.selected===outIdx) M.selected=inIdx;
-  M.events.push({t:"sub",out:outIdx,in:inIdx,lib:!!isLib,set:M.setNum,rot:M.rot,time:now(),snap:before});
+  evPush({t:"sub",out:outIdx,in:inIdx,lib:!!isLib,set:M.setNum,rot:M.rot,time:now(),snap:before});
   save(); $("dlgSub").close(); renderAll(); toast("Cambio: entra "+pNum(inIdx)+", esce "+pNum(outIdx)); vib(28);
 }
 
@@ -905,7 +953,7 @@ function doSub(outIdx,inId,isLib){
 function openOppRot(){
   const box=$("oppRotList"); box.innerHTML="";
   [1,2,3,4,5,6,null].forEach(z=>{ const b=document.createElement("button"); b.textContent=z?"P"+z:"Non indicata"; if(M.oppZ===z)b.classList.add("on");
-    b.onclick=()=>{ if(M.oppZ!==z){ M.events.push({t:"opprot",from:M.oppZ,to:z,set:M.setNum,time:now(),snap:snap()}); M.oppZ=z; save(); renderAll(); } $("dlgOppRot").close(); };
+    b.onclick=()=>{ if(M.oppZ!==z){ evPush({t:"opprot",from:M.oppZ,to:z,set:M.setNum,time:now(),snap:snap()}); M.oppZ=z; save(); renderAll(); } $("dlgOppRot").close(); };
     box.appendChild(b); });
   $("dlgOppRot").showModal();
 }
@@ -1036,7 +1084,7 @@ function renderOppRoster(){
 function setRot(r){
   if(M.finished){toast("La partita è conclusa");return;}
   r=((r%6)+6)%6; if(r===M.rot) return;
-  M.events.push({t:"rot",from:M.rot,to:r,label:rotLabel(r),set:M.setNum,time:now(),snap:snap()});
+  evPush({t:"rot",from:M.rot,to:r,label:rotLabel(r),set:M.setNum,time:now(),snap:snap()});
   M.rot=r; if(M.setStarted&&M.serving==="us") M.selected=serverIdx();
   save(); renderAll(); renderRotDlg();
 }
@@ -1096,7 +1144,7 @@ function pointRows(evs){
   const legacyThem=pts.filter(e=>e.t==="point"&&!e.kind&&e.point.winner==="them").length;
   const errSingoli=pts.filter(e=>e.t==="touch"&&e.point.winner==="them").length;
   const ptTocchi=pts.filter(e=>e.t==="touch"&&e.point.winner==="us").length;
-  const rows=[["Punti fatti",pu,"tot"],["di cui con tocchi vincenti (attacco, muro, ace)",ptTocchi,"sub"],["di cui errori in battuta avversari",k("errbat"),"sub"],["di cui altri errori avversari",k("errloro"),"sub"]];
+  const rows=[["Punti fatti",pu,"tot"],["di cui con tocchi vincenti (attacco, muro, ace)",ptTocchi,"sub"],["di cui muri di squadra (senza giocatore)",k("murosq"),"sub"],["di cui errori in battuta avversari",k("errbat"),"sub"],["di cui altri errori avversari",k("errloro"),"sub"]];
   if(legacyUs) rows.push(["di cui +1 Noi (versione precedente)",legacyUs,"sub"]);
   rows.push(["Punti subiti",pt,"tot"],["di cui errori di singoli giocatori",errSingoli,"sub"],["di cui errori di squadra non attribuiti",k("errnostro"),"sub"],["di cui punti diretti avversari",k("puntoloro"),"sub"]);
   if(legacyThem) rows.push(["di cui +1 Loro (versione precedente)",legacyThem,"sub"]);
@@ -1336,9 +1384,30 @@ const RECV={ // per zona del palleggiatore: zona -> [x,y] (5-1, ricezione a 3)
   5:{3:[.6,.22],6:[.66,.5],1:[.66,.82],4:[.08,.1],5:[.36,.08],2:[.08,.9]},
   4:{5:[.66,.18],6:[.68,.5],2:[.6,.8],4:[.08,.34],3:[.08,.56],1:[.86,.93]},
   3:{4:[.6,.18],5:[.66,.44],1:[.66,.82],6:[.86,.62],3:[.08,.55],2:[.08,.86]},
-  2:{3:[.6,.22],6:[.66,.5],1:[.66,.8],4:[.08,.1],5:[.86,.07],2:[.08,.9]}
+  2:{3:[.6,.2],6:[.66,.52],1:[.66,.82],4:[.08,.1],5:[.88,.36],2:[.08,.9]}
 };
+function gameLayout(team,getInfo){ // posizioni di gioco 5-1: libero zona 5, schiacciatore zona 6
+  const rl=z=>{ const x=getInfo(z); if(!x||x.i==null||x.i<0) return ""; if(x.lib) return "L"; return team==="us"?role(x.i):oppRole(x.i); };
+  const out={}, front=[2,3,4], back=[1,5,6];
+  const pick=(zs,roles)=>zs.find(z=>!(z in out)&&roles.includes(rl(z)));
+  let z;
+  if((z=pick(front,["S"]))) out[z]=[.2,.16];
+  if((z=pick(front,["C"]))) out[z]=[.2,.5];
+  if((z=pick(front,["P","O"]))) out[z]=[.2,.84];
+  if((z=pick(back,["L","C"]))) out[z]=[.78,.16];
+  if((z=pick(back,["S"]))) out[z]=[.78,.5];
+  if((z=pick(back,["P","O"]))) out[z]=[.78,.84];
+  return Object.keys(out).length===6?out:null;
+}
+function inPlay(team){
+  if(!M.setStarted||M.finished) return false;
+  const ev=rallyEvents();
+  if(team==="us") return phase()==="play";
+  if(M.serving==="them") return true;
+  return ev.some(e=>e.t==="opprec"||(e.t==="touch"&&e.f!=="Battuta"));
+}
 function posFor(team,z){
+  if(inPlay(team)){ const gl=gameLayout(team,team==="us"?usShown:themShown); if(gl&&gl[z]) return gl[z]; }
   const serving=M.serving===team, sz=team==="us"?setterZone(M.rot):(M.oppLine?M.oppZ:null);
   if(M.setStarted&&!M.finished&&!serving&&sz&&RECV[sz]&&RECV[sz][z]) return RECV[sz][z];
   if(M.setStarted&&!M.finished&&serving&&z===1) return [.95,.84];
@@ -1418,13 +1487,21 @@ function tapCard(team,info){
   openAct({team,idx:info.i,funds:["Attacco","Difesa","Muro"]});
 }
 let ACT=null;
+const QSHORT={
+  Battuta:{"++":"Ace","+":"Positiva","!":"Neutra","-":"Negativa","/":"Sovrapalla","=":"Errore"},
+  Ricezione:{"++":"Perfetta","+":"Positiva","!":"Esclamativa","-":"Negativa","/":"Di là","=":"Errore/ace"},
+  Attacco:{"++":"Punto","+":"Positivo","!":"Rigiocato","-":"Negativo","/":"Murato","=":"Errore"},
+  Difesa:{"++":"Perfetta","+":"Positiva","!":"Giocabile","-":"Palla alta","/":"Di là","=":"Errore"},
+  Muro:{"++":"Punto","+":"Positivo","!":"Toccato","-":"Per loro","/":"Mani-out","=":"Invasione"}};
 function openAct(a){
   ACT=a; const p=$("actPanel");
   const who=a.team==="us"?pFull(a.idx):"Avversario "+oNum(a.idx);
-  let h='<div class="act-head"><div><b>'+esc(who)+'</b><small>'+(a.team==="us"?"":"Ricezione avversaria")+'</small></div><button id="actX" aria-label="Chiudi">×</button></div>';
-  a.funds.forEach(f=>{ h+='<div class="act-row"><span class="lab">'+f+'</span>'+QUAL.map(q=>'<button class="q '+q.cls+'" data-f="'+f+'" data-q="'+esc(q.c)+'" title="'+esc(LEGEND[f][q.c])+'">'+esc(q.c)+'</button>').join("")+'</div>'; });
-  h+='<div class="act-hint">Tieni premuto un giocatore per il cambio. Legenda nel menu.</div>';
-  p.innerHTML=h; p.classList.add("on"); $("actScrim").classList.add("on");
+  let h='<div class="act-head"><div><b>'+esc(who)+'</b><small>'+(a.funds.length===1?(a.team==="us"?a.funds[0]:"Ricezione avversaria"):"")+'</small></div><button id="actX" aria-label="Chiudi">×</button></div>';
+  h+='<div class="act-cols'+(a.funds.length>1?' multi':'')+'" style="grid-template-columns:repeat('+a.funds.length+',minmax(0,1fr))">';
+  a.funds.forEach(f=>{ h+='<div class="act-col">'+(a.funds.length>1?'<div class="lab">'+f+'</div>':'')+
+    QUAL.map(q=>'<button class="q '+q.cls+'" data-f="'+f+'" data-q="'+esc(q.c)+'" title="'+esc(LEGEND[f][q.c])+'"><b>'+esc(q.c)+'</b><span>'+esc((QSHORT[f]||{})[q.c]||"")+'</span></button>').join("")+'</div>'; });
+  h+='</div>';
+  p.innerHTML=h; p.classList.toggle("one",a.funds.length===1); p.classList.add("on"); $("actScrim").classList.add("on");
   $("actX").onclick=closeAct;
   p.querySelectorAll("button.q").forEach(b=>b.onclick=()=>{ const f=b.dataset.f,q=b.dataset.q; const A=ACT; closeAct();
     if(A.team==="us"){ M.selected=A.idx; addTouch(f,q,null); } else { M.oppSel=A.idx; addOppRec(q,null); } });
@@ -1435,7 +1512,7 @@ function setOppRot(d){
   if(!M.oppLine){toast("Inserisci la formazione avversaria a inizio set");return;}
   const before=snap(); const from=M.oppZ;
   M.oppRot=(((M.oppRot||0)+d)%6+6)%6; syncOppZ();
-  M.events.push({t:"opprot",from,to:M.oppZ,set:M.setNum,time:now(),snap:before}); save(); renderAll();
+  evPush({t:"opprot",from,to:M.oppZ,set:M.setNum,time:now(),snap:before}); save(); renderAll();
 }
 function openOppSub(info){
   if(!M.oppLine||info.i<0) return;
@@ -1449,7 +1526,7 @@ function openOppSub(info){
 function doOppSub(outI,inI,isLib){
   const before=snap();
   if(isLib) M.oppLib=inI; else { const z=M.oppLine.indexOf(outI); if(z<0) return; M.oppLine[z]=inI; if(oppRole(inI)==="") M.opp[inI].role=oppRole(outI); syncOppZ(); }
-  M.events.push({t:"oppsub",out:outI,in:inI,set:M.setNum,time:now(),snap:before}); save(); $("dlgSub").close(); renderAll(); toast("Cambio avversario: entra "+oNum(inI)+", esce "+oNum(outI));
+  evPush({t:"oppsub",out:outI,in:inI,set:M.setNum,time:now(),snap:before}); save(); $("dlgSub").close(); renderAll(); toast("Cambio avversario: entra "+oNum(inI)+", esce "+oNum(outI));
 }
 
 /* ---------- Home ---------- */
@@ -1479,7 +1556,7 @@ function openReportOf(m){
   repSet=0; repRot=""; showView("report");
 }
 function leaveViewing(){ if(viewing){ M=viewing.prev; viewing=null; } }
-function homeNewMatch(){
+function homeNewMatch(){ REDO.length=0;
   const go=()=>{ if(M.events.length) store.archive.unshift(M); M=newMatch(M,store.team); M.ready=true; store.current=M; ensureStdOpp(); save(); repSet=0; repRot=""; renderAll(); showView("roster",{prep:true}); toast("Inserisci il nome degli avversari, poi Avvio partita"); };
   if(M.events.length&&!M.finished) confirmBox("Iniziare una nuova partita?","La partita in corso non è chiusa: viene salvata in archivio e potrai riaprirla da Tutti i report.",go,"Nuova partita");
   else go();
@@ -1504,7 +1581,7 @@ function showView(v,opt){
 }
 let booted=false;
 function renderAll(){
-  renderBoard(); renderPlayers(); renderOpp(); renderLog(); $("undoBtn").disabled=!M.events.length;
+  renderBoard(); renderPlayers(); renderOpp(); renderLog(); $("undoBtn").disabled=!M.events.length; $("redoBtn").disabled=!REDO.length; renderTO();
   if(curView==="report") renderReport();
   if(curView==="matches") renderMatches();
   if(curView==="home") renderHome();
@@ -1532,6 +1609,7 @@ $("mLegend").onclick=showLegend;
 $("autoPt").onchange=e=>{M.auto=e.target.checked;save();toast(M.auto?"Punto automatico attivo":"Punto automatico disattivato");};
 document.querySelectorAll(".pt-btn").forEach(b=>b.onclick=()=>addKindPoint(b.dataset.kind,b));
 $("undoBtn").onclick=undo;
+$("redoBtn").onclick=redo;
 $("oppRotChip").onclick=openOppRot;
 $("fStart").onclick=startSet;
 $("mForm").onclick=()=>{ closeMenu(); if(M.setStarted&&!M.finished){toast("Set in corso: per i cambi tieni premuto il giocatore che esce");return;} openForm(); };
@@ -1545,6 +1623,7 @@ $("homeNew").onclick=homeNewMatch;
 $("startMatchBtn").onclick=()=>showView("scout");
 $("cuEB").onclick=()=>addKindPoint("errbat",null);
 $("cuPTus").onclick=()=>addKindPoint("errloro",null);
+$("cuMU").onclick=()=>addKindPoint("murosq",null);
 $("cuER").onclick=()=>addKindPoint("errnostro",null);
 $("cuPTthem").onclick=()=>addKindPoint("puntoloro",null);
 $("cuRotUsB").onclick=()=>setRot(M.rot-1);
